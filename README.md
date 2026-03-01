@@ -52,6 +52,8 @@ Ensure the following tools are installed and available in your `$PATH`:
 ### Initialization
 All scripts are designed to be run from the repository root. Ensure you have a clean environment or use the provided scripts to recreate the cluster.
 
+The runner scripts automatically ensure a deterministic environment by recreating or validating the kind cluster before executing benchmarks.
+
 ## 6. Running Benchmarks
 
 ### Baseline Benchmark
@@ -64,7 +66,21 @@ Evaluates routing with an attached `TrafficPolicy` (the extension layer prototyp
 - **Windows**: `.\run-inference.ps1`
 - **Linux/macOS**: `chmod +x run-inference.sh && ./run-inference.sh`
 
-## 7. Results Summary
+Note: This prototype focuses on TrafficPolicy-based extension attachment. Model-aware routing, multi-backend inference selection, and advanced EPP configurations are considered future extensions of this framework.
+
+## 7. What the Runner Scripts Do
+
+Each runner script executes the following stages to ensure a clean and reproducible benchmark:
+
+1. **Environment Setup**: Creates (or recreates) a `kind` cluster using the local configuration.
+2. **Component Installation**: Installs `kgateway` and required Custom Resource Definitions (CRDs) via Helm.
+3. **Backend Deployment**: Deploys the `inference-backend` (Go-based 100ms delay server).
+4. **Routing Configuration**: Applies the `Gateway` and specific `HTTPRoute` resources.
+5. **Extension Attachment**: Optionally attaches the `TrafficPolicy` (exclusive to the inference benchmark).
+6. **Execution**: Initiates the `k6` load test against the gateway entrypoint.
+7. **Persistence**: Stores the raw console output and metrics in the `results/` directory.
+
+## 8. Results Summary
 The benchmarks demonstrate that the attachment of a `TrafficPolicy` to an `HTTPRoute` in `kgateway v2.3.0-main` introduces negligible overhead relative to the baseline configuration. Throughput remains consistent, and median latency delta is typically within expected variance margins.
 
 ### Comparison Table
@@ -78,7 +94,7 @@ The benchmarks demonstrate that the attachment of a `TrafficPolicy` to an `HTTPR
 | **Throughput (RPS)** | 461.29 req/s | 461.52 req/s | +0.23 req/s |
 | **Error Rate** | 0% | 0% | 0 |
 
-## 8. Reproducing Exact Numbers
+## 9. Reproducing Exact Numbers
 
 When running the benchmarks, the `k6` output will follow this pattern:
 
@@ -93,17 +109,17 @@ When running the benchmarks, the `k6` output will follow this pattern:
 - **RPS**: ~450 - 470 req/s (at 50 Virtual Users)
 - **Errors**: Should consistently be 0.00%.
 
-## 9. Limitations
+## 10. Limitations
 - **Local Environment**: High-percentile latency (p99) is subject to host system jitter and Docker Desktop resource scheduling.
 - **Transport**: `kubectl port-forward` is used for simplicity but introduces overhead not present in production LoadBalancer environments.
 - **Policy Scope**: The test utilizes a minimal extension policy; complex filters may increase processing time.
 
-## 10. Future Work
+## 11. Future Work
 - **Real Backend Integration**: Testing against vLLM or Ollama to evaluate performance under heavy payload conditions.
 - **Scaling Analysis**: Evaluating impact as the number of concurrent Virtual Users (VUs) increases beyond 50.
 - **Cross-AZ Routing**: Measuring latency in multi-zone clusters.
 
-## 11. Repository Structure
+## 12. Repository Structure
 ```text
 kgateway-inference-benchmark/
 │   kind-config.yaml
