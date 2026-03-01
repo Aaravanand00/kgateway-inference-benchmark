@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inference-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inference-backend
+  template:
+    metadata:
+      labels:
+        app: inference-backend
+    spec:
+      containers:
+      - name: inference-backend
+        image: inference-backend:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080

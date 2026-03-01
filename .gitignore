@@ -1,0 +1,33 @@
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+bin/
+
+# Helm
+*.tgz
+charts/
+chart/
+
+# Node/k6
+node_modules/
+.npm/
+npm-debug.log*
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Results (Optional, but keeping logs/txt might be desired by user. 
+# I will only ignore generic binary/dump files)
+*.log
+*.prof
