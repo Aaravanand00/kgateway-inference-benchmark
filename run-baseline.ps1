@@ -3,6 +3,10 @@
 
 # 1. Create Kind Cluster
 Write-Host "[1/7] Ensuring Kind cluster is up..." -ForegroundColor Cyan
+if (kind get clusters -q | Where-Object { $_ -eq "kgateway-bench" }) {
+    Write-Warning "Cluster 'kgateway-bench' already exists. Recreating for a clean benchmark environment..."
+    kind delete cluster --name kgateway-bench
+}
 kind create cluster --config kind-config.yaml --name kgateway-bench
 
 # 2. Build and Load Backend Image

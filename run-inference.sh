@@ -6,6 +6,10 @@ set -e
 
 # 1. Create Kind Cluster
 echo "[1/7] Ensuring Kind cluster is up..."
+if kind get clusters | grep -q "^kgateway-bench$"; then
+    echo "Warning: Cluster 'kgateway-bench' already exists. Recreating for clean benchmark..."
+    kind delete cluster --name kgateway-bench
+fi
 kind create cluster --config kind-config.yaml --name kgateway-bench
 
 # 2. Build and Load Backend Image

@@ -3,7 +3,11 @@
 .PHONY: cluster install baseline inference clean
 
 cluster:
-	@echo "Creating Kind cluster..."
+	@echo "Ensuring Kind cluster is up..."
+	@if kind get clusters | grep -q "^kgateway-bench$$"; then \
+		echo "Warning: Cluster 'kgateway-bench' already exists. Recreating for clean benchmark..."; \
+		kind delete cluster --name kgateway-bench; \
+	fi
 	kind create cluster --config kind-config.yaml --name kgateway-bench
 
 install:
