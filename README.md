@@ -118,6 +118,7 @@ When running the benchmarks, the `k6` output will follow this pattern:
 - **Real Backend Integration**: Testing against vLLM or Ollama to evaluate performance under heavy payload conditions.
 - **Scaling Analysis**: Evaluating impact as the number of concurrent Virtual Users (VUs) increases beyond 50.
 - **Cross-AZ Routing**: Measuring latency in multi-zone clusters.
+- These extensions represent natural progression toward a comprehensive inference-routing benchmarking framework.
 
 ## 12. Repository Structure
 ```text
@@ -151,3 +152,4 @@ kgateway-inference-benchmark/
         inference.txt                # Inference run logs
         comparison.md                # Comparison table & Analysis
 ```
+
