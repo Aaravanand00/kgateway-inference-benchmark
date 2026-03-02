@@ -114,42 +114,72 @@ When running the benchmarks, the `k6` output will follow this pattern:
 - **Transport**: `kubectl port-forward` is used for simplicity but introduces overhead not present in production LoadBalancer environments.
 - **Policy Scope**: The test utilizes a minimal extension policy; complex filters may increase processing time.
 
-## 11. Future Work
-- **Real Backend Integration**: Testing against vLLM or Ollama to evaluate performance under heavy payload conditions.
-- **Scaling Analysis**: Evaluating impact as the number of concurrent Virtual Users (VUs) increases beyond 50.
-- **Cross-AZ Routing**: Measuring latency in multi-zone clusters.
-- These extensions represent natural progression toward a comprehensive inference-routing benchmarking framework.
+## 11. Streaming Inference Simulation
+The benchmark now supports simulating streaming responses typical of Large Language Models (LLMs) to evaluate how gateway policies affect streaming performance.
 
-## 12. Repository Structure
+### Endpoint: `/infer-stream`
+The backend simulates a streaming response with the following behavior:
+1. **Immediate Headers**: Sends HTTP status and headers immediately.
+2. **Deterministic TTFT**: Waits 50ms before sending the first chunk.
+3. **Token Streaming**: Sends 20 small JSON chunks, each separated by a 10ms delay.
+
+### Metrics Definitions
+- **TTFT (Time To First Token)**: The time from the initial request until the first byte of response data arrives. This is the most critical metric for interactive LLM applications.
+- **ITL (Inter-Token Latency)**: The average time between receiving consecutive chunks (tokens). High ITL leads to "stuttering" in the UI.
+- **Total Duration**: The total time from request start to the end of the stream.
+
+> [!IMPORTANT]
+> This suite uses a deterministic CPU-based simulator. GPU-based real LLM benchmarking (e.g., vLLM, Ollama) is planned for future milestones.
+
+### Streaming Comparison Table (Placeholder)
+
+| Metric | Direct Access | Gateway Path | Extension Path |
+| :--- | :--- | :--- | :--- |
+| **Median TTFT (p50)** | ~55 ms | TBD | TBD |
+| **95th TTFT (p95)** | ~60 ms | TBD | TBD |
+| **Avg ITL** | ~10 ms | TBD | TBD |
+| **Total Duration** | ~250 ms | TBD | TBD |
+
+## 12. Standard Service Comparison Mode
+To isolate the latency added by the gateway vs the raw service, use the new direct comparison scripts:
+- **Windows**: `.\run-direct.ps1`
+- **Linux/macOS**: `./run-direct.sh`
+
+These scripts measure three paths:
+1. **Raw Service**: Direct `port-forward` to the backend pod (bypassing Envoy).
+2. **Gateway Path**: Standard routing through kgateway.
+3. **Extension Path**: Routing through kgateway with `InferenceExtension` filters active.
+
+Results are summarized in `results/direct.txt`.
+
+## 13. Future Work
+- **Real Backend Integration**: Testing against vLLM or Ollama.
+- **Streaming Policy Impact**: Measuring how rate-limiting or header-injection affects stream throughput.
+- **Scaling Analysis**: Evaluating impact as the number of concurrent Virtual Users (VUs) increases.
+
+## 14. Repository Structure
 ```text
 kgateway-inference-benchmark/
 │   kind-config.yaml
 │   Makefile
-│   README.md                        # Project documentation
-│   run-baseline.ps1                 # Windows baseline runner
-│   run-baseline.sh                  # Linux baseline runner
-│   run-inference.ps1                # Windows inference runner
-│   run-inference.sh                 # Linux inference runner
-│   .gitignore
+│   README.md
+│   run-baseline.ps1
+│   run-baseline.sh
+│   run-inference.ps1
+│   run-inference.sh
+│   run-direct.ps1                   # NEW: Comparison runner
+│   run-direct.sh                    # NEW: Comparison runner
 │
-├───backend/                         # Inference simulator
-│       deployment.yaml
-│       Dockerfile
-│       main.go
-│       service.yaml
-│
-├───gateway/                         # Gateway API resources
-│       gateway.yaml
-│       httproute-baseline.yaml       # Original baseline route
-│       httproute-inference.yaml      # Prototype inference route
-│       trafficpolicy.yaml            # Extension policy layer
-│
-├───loadtest/                        # k6 scripts
+├───backend/
+│       main.go                      # Includes /infer-stream
+│       ...
+├───loadtest/
 │       baseline.js
+│       streaming.js                 # NEW: TTFT/Streaming test
 │
-└───results/                         # Benchmark data
-        baseline.txt                 # Baseline run logs
-        inference.txt                # Inference run logs
-        comparison.md                # Comparison table & Analysis
+└───results/
+        baseline.txt
+        inference.txt
+        direct.txt                   # NEW: Comparison results
 ```
 
