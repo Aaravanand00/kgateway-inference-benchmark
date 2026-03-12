@@ -1,12 +1,12 @@
 # run-direct.ps1
-# Measures raw service latency vs gateway path vs extension latency
+# Direct comparison: raw service latency vs. gateway path vs. extension path.
 
 $ErrorActionPreference = "Stop"
 
 # 1. Ensure Kind cluster is up
 Write-Host "[1/7] Ensuring Kind cluster is up..." -ForegroundColor Cyan
 if (-not (kind get clusters -q | Where-Object { $_ -eq "kgateway-bench" })) {
-    & ./run-baseline.ps1
+    & .\scripts\run-baseline.ps1
 }
 
 # 2. Update Backend Image
@@ -14,7 +14,7 @@ Write-Host "[2/7] Updating backend image..." -ForegroundColor Cyan
 docker build -t inference-backend:latest ./backend
 kind load docker-image inference-backend:latest --name kgateway-bench
 
-# 3. Configure kgateway
+# 3. Configure kgateway with inference extension enabled
 Write-Host "[3/7] Configuring kgateway..." -ForegroundColor Cyan
 helm upgrade --install kgateway oci://cr.kgateway.dev/kgateway-dev/charts/kgateway -n kgateway-system --version 2.3.0-main --set kgateway.inferenceExtension.enabled=true
 
@@ -35,10 +35,10 @@ $pfGateway = Start-Process kubectl -ArgumentList "port-forward -n default svc/mi
 Start-Sleep -Seconds 5
 
 # 6. Run Comparisons
-Write-Host "Running Comparison Benchmarks..." -ForegroundColor Cyan
+Write-Host "Running comparison benchmarks..." -ForegroundColor Cyan
 if (-not (Test-Path results)) { New-Item -ItemType Directory -Path results }
 
-"Kgateway Inference Benchmark - Direct Comparison" | Out-File ./results/direct.txt
+"kgateway Inference Benchmark - Direct Comparison" | Out-File ./results/direct.txt
 "Date: $(Get-Date)" | Add-Content ./results/direct.txt
 "==========================================" | Add-Content ./results/direct.txt
 

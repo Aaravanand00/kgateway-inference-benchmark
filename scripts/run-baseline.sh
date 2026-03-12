@@ -1,6 +1,6 @@
 #!/bin/bash
 # run-baseline.sh
-# Reproducible baseline benchmark for kgateway (no inference extension)
+# Baseline benchmark: kgateway HTTP routing without inference extension.
 
 set -e
 
@@ -29,7 +29,6 @@ kubectl apply -f ./backend/
 kubectl apply -f ./gateway/gateway.yaml
 kubectl apply -f ./gateway/httproute-baseline.yaml
 
-# Wait for resources to be ready
 echo "Waiting for pods to be ready..."
 kubectl wait --for=condition=Ready pod -l app=inference-backend --timeout=60s
 
@@ -37,7 +36,7 @@ kubectl wait --for=condition=Ready pod -l app=inference-backend --timeout=60s
 echo "[5/7] Starting port-forward on localhost:8081..."
 kubectl port-forward -n default svc/minimal-gateway 8081:80 > /dev/null 2>&1 &
 PF_PID=$!
-sleep 5 # Wait for PF to establish
+sleep 5
 
 # 6. Run k6 Load Test
 echo "[6/7] Running k6 benchmark..."

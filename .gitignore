@@ -27,7 +27,6 @@ npm-debug.log*
 ehthumbs.db
 Thumbs.db
 
-# Results (Optional, but keeping logs/txt might be desired by user. 
-# I will only ignore generic binary/dump files)
+# Logs and profiling output
 *.log
 *.prof

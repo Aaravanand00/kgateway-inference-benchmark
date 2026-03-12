@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agentgateway-config
+data:
+  config.yaml: |
+    binds:
+      - port: 8080
+        listeners:
+          - protocol: HTTP
+            routes:
+              - matches:
+                  - path:
+                      pathPrefix: "/"
+                backends:
+                  - host: "inference-backend:80"

@@ -1,0 +1,11 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: agentgateway-route
+spec:
+  parentRefs:
+  - name: minimal-gateway
+  rules:
+  - backendRefs:
+    - name: agentgateway
+      port: 80

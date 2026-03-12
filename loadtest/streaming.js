@@ -2,8 +2,7 @@ import http from 'k6/http';
 import { Trend } from 'k6/metrics';
 import { check, sleep } from 'k6';
 
-// Custom metric for Time to First Byte (TTFB)
-// In streaming inference, this is often used as a proxy for TTFT (Time to First Token)
+// TTFB is used as a proxy for TTFT in streaming inference benchmarks.
 const ttftTrend = new Trend('time_to_first_byte', true);
 
 export const options = {
@@ -14,15 +13,14 @@ export const options = {
 
 export default function () {
   const url = __ENV.TARGET_URL || 'http://localhost:8081/infer-stream';
-  
+
   const res = http.get(url);
-  
+
   check(res, {
     'is status 200': (r) => r.status === 200,
   });
 
-  // res.timings.waiting corresponds to TTFB
   ttftTrend.add(res.timings.waiting);
-  
+
   sleep(0.5);
 }

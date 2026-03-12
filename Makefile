@@ -25,7 +25,6 @@ baseline:
 	kubectl apply -f ./gateway/httproute-baseline.yaml
 	kubectl wait --for=condition=Ready pod -l app=inference-backend --timeout=60s
 	@echo "Starting port-forward and benchmark..."
-	# Background port-forwarding (works in Unix/WSL/Git Bash habitats)
 	kubectl port-forward -n default svc/minimal-gateway 8081:80 > /dev/null 2>&1 & \
 	PID=$$!; \
 	sleep 5; \
@@ -39,7 +38,6 @@ inference:
 	kubectl apply -f ./gateway/trafficpolicy.yaml
 	kubectl wait --for=condition=Ready pod -l app=inference-backend --timeout=60s
 	@echo "Starting port-forward and benchmark..."
-	# Background port-forwarding (works in Unix/WSL/Git Bash habitats)
 	kubectl port-forward -n default svc/minimal-gateway 8081:80 > /dev/null 2>&1 & \
 	PID=$$!; \
 	sleep 5; \

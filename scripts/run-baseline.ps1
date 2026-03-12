@@ -1,5 +1,5 @@
 # run-baseline.ps1
-# Reproducible baseline benchmark for kgateway (no inference extension)
+# Baseline benchmark: kgateway HTTP routing without inference extension.
 
 # 1. Create Kind Cluster
 Write-Host "[1/7] Ensuring Kind cluster is up..." -ForegroundColor Cyan
@@ -26,18 +26,16 @@ kubectl apply -f ./backend/
 kubectl apply -f ./gateway/gateway.yaml
 kubectl apply -f ./gateway/httproute-baseline.yaml
 
-# Wait for resources to be ready
 Write-Host "Waiting for pods to be ready..."
 kubectl wait --for=condition=Ready pod -l app=inference-backend --timeout=60s
 
 # 5. Start Port-Forward in Background
 Write-Host "[5/7] Starting port-forward on localhost:8081..." -ForegroundColor Cyan
 $pfProcess = Start-Process kubectl -ArgumentList "port-forward -n default svc/minimal-gateway 8081:80" -PassThru -NoNewWindow
-Start-Sleep -Seconds 5 # Wait for PF to establish
+Start-Sleep -Seconds 5
 
 # 6. Run k6 Load Test
 Write-Host "[6/7] Running k6 benchmark..." -ForegroundColor Cyan
-# Assumes 'k6' is in your system PATH
 k6 run --summary-trend-stats "avg,p(50),p(95),p(99)" ./loadtest/baseline.js | Tee-Object -FilePath ./results/baseline.txt
 
 # 7. Cleanup

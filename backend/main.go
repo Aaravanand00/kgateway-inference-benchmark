@@ -7,14 +7,12 @@ import (
 )
 
 func main() {
-	// Original inference endpoint
 	http.HandleFunc("/infer", func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(100 * time.Millisecond)
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprint(w, `{"result":"ok"}`)
 	})
 
-	// New streaming inference endpoint
 	http.HandleFunc("/infer-stream", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/x-ndjson")
 		w.Header().Set("Transfer-Encoding", "chunked")
@@ -25,10 +23,10 @@ func main() {
 			return
 		}
 
-		// Send headers immediately
+		// Flush headers immediately so clients can measure TTFB.
 		flusher.Flush()
 
-		// Simulate Time To First Token (TTFT)
+		// Simulate TTFT: 50ms before first token.
 		time.Sleep(50 * time.Millisecond)
 
 		for i := 1; i <= 20; i++ {
@@ -36,7 +34,7 @@ func main() {
 			fmt.Fprint(w, "\n")
 			flusher.Flush()
 			if i < 20 {
-				time.Sleep(10 * time.Millisecond) // Simulate Inter-Token Latency (ITL)
+				time.Sleep(10 * time.Millisecond) // ~10ms inter-token latency
 			}
 		}
 	})

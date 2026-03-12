@@ -1,4 +1,4 @@
-# Benchmark Comparison: Kgateway Baseline vs. TrafficPolicy (Inference Layer)
+# Benchmark Comparison: kgateway Baseline vs. TrafficPolicy (Inference Layer)
 
 ## Comparison Table
 
@@ -12,22 +12,28 @@
 | **Error Rate** | 0% | 0% | 0 |
 
 ## Technical Analysis
-The benchmark results indicate that the introduction of a `TrafficPolicy` resource to target the `HTTPRoute` does not negatively impact the core performance of the gateway under the tested load (50 VUs). The slight delta in median latency is statistically insignificant and likely attributable to minor variations in the local environment or the k6 engine during the test window.
+
+The introduction of a `TrafficPolicy` resource targeting the `HTTPRoute` does not negatively impact core gateway performance under the tested load (50 VUs). The delta in median latency is within noise and attributable to minor local environment variation during the test window.
 
 ## Overhead Estimation
-Given the backend service has a fixed artificial delay of 100ms:
+
+Given the backend has a fixed artificial delay of 100ms:
+
 - **Baseline Proxy Overhead (p50):** ~7.76ms
 - **Inference Layer Overhead (p50):** ~7.48ms
-- **Incremental Overhead:** Negligible (< 1ms).
+- **Incremental Overhead:** Negligible (< 1ms)
 
-The implementation of the inference extension layer via Kgateway's `TrafficPolicy` mechanism appears to have a sub-millisecond footprint on the request path for the configuration tested.
+The inference extension layer via kgateway's `TrafficPolicy` mechanism has a sub-millisecond footprint on the request path for the configuration tested.
 
 ## Stability Assessment
+
 Both configurations exhibited high stability:
-- **Error Consistency:** Zero failures occurred across both 1-minute test runs.
-- **Latency Spread:** The p99 to p50 ratio remained within a healthy range (~1.10 for baseline, ~1.15 for inference), indicating that the addition of the policy layer did not introduce significant tail latency or queuing issues.
+
+- **Error Consistency:** Zero failures across both 1-minute test runs.
+- **Latency Spread:** The p99-to-p50 ratio remained within a healthy range (~1.10 for baseline, ~1.15 for inference), indicating the policy layer did not introduce significant tail latency or queuing issues.
 
 ## Limitations
-1. **Local Node Jitter:** Since the benchmark was conducted on a single Kind node (Docker Desktop), networking artifacts or local resource contention may influence the high-percentile results (p99).
-2. **Policy Complexity:** This test utilized a minimal `TrafficPolicy`. More complex policies involving advanced filtering or transformations may yield different performance characteristics.
-3. **Port-forwarding Overhead:** The benchmarks utilized `kubectl port-forward`, which introduces its own latency and throughput limitations compared to a native LoadBalancer environment.
+
+1. **Local Node Jitter:** Benchmarks were conducted on a single Kind node (Docker Desktop); local resource contention may influence high-percentile results (p99).
+2. **Policy Complexity:** This test used a minimal `TrafficPolicy`. More complex policies involving advanced filtering or transformations may yield different results.
+3. **Port-forwarding Overhead:** `kubectl port-forward` introduces its own latency and throughput limitations compared to a native LoadBalancer environment.
